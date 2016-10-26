@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>linux git ssh - Zero Sky</title>
+    <meta name="keywords" content="C&#43;&#43; Golang React Python Vim"/>
+    <meta name="description" content="PuGo is a Simple Static Site Generator"/>
+    <link rel="stylesheet" href="/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/css/prism.css"/>
+    <link rel="stylesheet" href="/css/style.css"/>
+</head>
+<body class="post-tag" data-perma="post-tag-linux git ssh">
+<header id="header">
+    <div class="container">
+        <div class="header clearfix">
+            <nav id="site-nav">
+                <ul class="nav nav-inverse nav-pills pull-right">
+                    <li role="presentation" class="">
+                        <a href="/" >Home
+                        </a>
+                    </li>
+                    <li role="presentation" class="">
+                        <a href="/archive.html" >Archive
+                        </a>
+                    </li>
+                    <li role="presentation" class="">
+                        <a href="/about.html" >About
+                        </a>
+                    </li>
+                    <li role="presentation" class="">
+                        <a href="https://github.com/netdigger/blog"  target="_blank" >Source
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <h3 id="site-title">
+                <a href="/">Zero Sky <sup>Notes of Programmer</sup></a>
+            </h3>
+        </div>
+    </div>
+</header>
+
+<section id="main">
+    <div class="container">
+        <div id="article-list">
+            <h2 class="tag text-center">linux git ssh</h2>
+            <article class="article">
+                <div class="row">
+                    <div class="col-md-10 col-md-offset-1 panel panel-default">
+                        <header class="header">
+                            <div class="meta">
+                        <span class="date">
+                            <span class="month">10</span>
+                            <span class="day">26</span>
+                        </span>
+                            </div>
+                            <h3 class="title">
+                                <a href="/2016/10/26/Set-Up-Git-Server-With-SSH.html">Set Up Git Server With SSH</a>
+                            </h3>
+                        </header>
+                        <section class="brief"><p>This Document is a copy of Git on the Server - Setting Up the Server</p>
+
+<h1 id="setting-up-server">Setting Up Server</h1>
+
+<p>Let’s walk through setting up SSH access on the server side.
+In this example, you’ll use the authorized_keys method for authenticating your users.
+We also assume you’re running a standard Linux distribution like Ubuntu.
+First, you create a git user and a .ssh directory for that user.</p>
+<pre><code>$ sudo adduser git
+$ su git
+$ cd
+$ mkdir .ssh &amp;&amp; chmod 700 .ssh
+$ touch .ssh/authorized_keys &amp;&amp; chmod 600 .ssh/authorized_keys
+</code></pre>
+
+<p>Next, you need to add some developer SSH public keys to the authorized_keys file for the git user.
+Let’s assume you have some trusted public keys and have saved them to temporary files.
+Again, the public keys look something like this:</p>
+<pre><code>$ cat /tmp/id_rsa.pub
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCB007n/ww+ouN4gSLKssMxXnBOvf9LGt4L
+ojG6rs6hPB09j9R/T17/x4lhJA0F3FR1rP6kYBRsWj2aThGw6HXLm9/5zytK6Ztg3RPKK+4k
+Yjh6541NYsnEAZuXz0jTTyAUfrtU3Z5E003C4oxOj6H0rfIF1kKI9MAQLMdpGW1GYEIgS9Ez
+Sdfd8AcCIicTDWbqLAcU4UpkaX8KyGlLwsNuuGztobF8m72ALC/nLF6JLtPofwFBlgc+myiv
+O7TCUSBdLQlgMVOFq1I2uPWQOkOWQAHukEOmfjy2jctxSDBQ220ymjaNsHT4kgtZg2AYYgPq
+dAv8JggJICUvax2T9va5 gsg-keypair
+</code></pre>
+
+<p>You just append them to the git user’s authorized_keys file in its .ssh directory:</p>
+
+<p>$ cat /tmp/id_rsa.pub &gt;&gt; ~/.ssh/authorized_keys</p>
+
+<p>Now, you can set up an empty repository for them by running git init with the --bare option,
+which initializes the repository without a working directory:</p>
+<pre><code>$ cd /opt/git
+$ mkdir project.git
+$ cd project.git
+$ git init --bare
+Initialized empty Git repository in /opt/git/project.git
+</code></pre>
+
+<p>At last, you can clone it down and push changes back up just as easily:</p>
+<pre><code>$ git clone git@gitserver:/opt/git/project.git
+$ cd project
+$ vim README
+$ git commit -am 'fix for the README file'
+$ git push origin master
+</code></pre>
+
+<p>With this method, you can quickly get a read/write Git server up and running
+for a handful of developers.</p>
+
+<h1 id="forbidden-login">Forbidden login</h1>
+
+<p>You should note that currently all these users can also log into the server and
+get a shell as the git user.
+If you want to restrict that,
+you will have to change the shell to something else in the passwd file.</p>
+
+<p>You can easily restrict the git user to only doing Git activities
+with a limited shell tool called git-shell that comes with Git.
+If you set this as your git user’s login shell,
+then the git user can’t have normal shell access to your server.
+To use this, specify git-shell instead of bash or csh for your user’s login shell.
+To do so, you must first add git-shell to /etc/shells if it’s not already there:</p>
+<pre><code>$ cat /etc/shells   # see if `git-shell` is already in there.  If not...
+$ which git-shell   # make sure git-shell is installed on your system.
+$ sudo vim /etc/shells  # and add the path to git-shell from last command
+</code></pre>
+
+<p>Now you can edit the shell for a user using chsh <username>:</p>
+<pre><code>$ sudo chsh git  # and enter the path to git-shell, usually: /usr/bin/git-shell
+</code></pre>
+
+<p>Now, the git user can only use the SSH connection to push and
+pull Git repositories and can’t shell onto the machine.
+If you try, you’ll see a login rejection like this:</p>
+<pre><code>$ ssh git@gitserver
+fatal: Interactive git shell is not enabled.
+hint: ~/git-shell-commands should exist and have read and execute access.
+Connection to gitserver closed.
+</code></pre>
+
+<p>Now Git network commands will still work just fine but the users won’t be able to get a shell.
+As the output states,
+you can also set up a directory in the git user’s home directory
+that customizes the git-shell command a bit.
+For instance,
+you can restrict the Git commands that the server will accept
+or you can customize the message that users see
+if they try to SSH in like that.
+Run git help shell for more information on customizing the shell.</p>
+</section>
+                        <aside class="aside clearfix">
+                            <a class="btn btn-primary btn-lg pull-right" href="/2016/10/26/Set-Up-Git-Server-With-SSH.html">Read More</a>
+                        </aside>
+                    </div>
+                </div>
+            </article>
+            
+            <div class="article-pager text-center">
+                
+                
+            </div>
+        </div>
+    </div>
+</section>
+<footer id="footer">
+    <div class="container text-center">
+        <p>© 2015 Zero Sky.
+            <a href="http://creativecommons.org/licenses/by/3.0/">All rights reserved </a> |
+            <a href="/feed.xml">Feed</a> |
+            <a href="/sitemap.xml">Sitemap</a>
+        </p>
+        <p>Powered by <a href="https://github.com/go-xiaohei/pugo">PuGo 0.10.5 (beta)</a>. Theme by Default.
+        </p>
+        
+    
+    
+
+    </div>
+</footer>
+<script src="/js/jquery-2.1.4.min.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/prism.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("pre code").addClass("line-numbers")
+    });
+</script>
+</body>
+</html>
