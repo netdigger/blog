@@ -135,7 +135,10 @@ P 粘贴粘贴板的内容到当前行的上面
 “a 将内容放入/存入a寄存器，可以支持多粘贴板
 </code></pre>
 
-<p>附：无图形界面的vi或vim下可用的寄存器只包括{a-zA-Z0-9.%#:-&ldquo;}。</p>
+<p>无图形界面的vi或vim下可用的寄存器只包括{a-zA-Z0-9.%#:-&ldquo;}。
+ubuntu 默认安装的vim不支持系统剪贴板。需要用如下命令安装才可以支持</p>
+<pre><code>$ sudo apt-get install vim-gnome
+</code></pre>
 
 <h1 id="移动光标">移动光标</h1>
 
