@@ -135,10 +135,25 @@ P 粘贴粘贴板的内容到当前行的上面
 “a 将内容放入/存入a寄存器，可以支持多粘贴板
 </code></pre>
 
-<p>无图形界面的vi或vim下可用的寄存器只包括{a-zA-Z0-9.%#:-&ldquo;}。
-ubuntu 默认安装的vim不支持系统剪贴板。需要用如下命令安装才可以支持</p>
+<p>无论是vim内部抑或外部的复制（[y]ank）、删除（[d]elete）、粘贴（[p]ut），在vim中都是借助registers（寄存器）实现的，vim共有9类寄存器：</p>
+
+<ol>
+<li>无名（unnamed）寄存器：&rdquo;&ldquo;，缓存最后一次操作内容；</li>
+<li>数字（numbered）寄存器：&rdquo;0 - &ldquo;9，缓存最近操作内容，复制与删除有别；</li>
+<li>行内删除（small delete）寄存器：&rdquo;-，缓存行内删除内容；</li>
+<li>具名（named）寄存器：&rdquo;a - &ldquo;z或&rdquo;A - &ldquo;Z，指定时可用；</li>
+<li>只读（read-only）寄存器：&rdquo;:, &ldquo;., &ldquo;%, &ldquo;#，分别缓存最近命令、最近插入文本、当前文件名、当前交替文件名；</li>
+<li>表达式（expression）寄存器：&rdquo;=，只读，用于执行表达式命令；</li>
+<li>选择及拖拽（selection and drop）寄存器：&rdquo;*, &ldquo;+, &ldquo;~，存取GUI选择文本，可用于与外部应用交互，使用前提为系统剪切板（clipboard）可用；</li>
+<li>黑洞（black hole）寄存器：&rdquo;_，不缓存操作内容（干净删除）；</li>
+<li>模式寄存器（last search pattern）：&rdquo;/，缓存最近的搜索模式。</li>
+</ol>
+
+<p>ubuntu 默认安装的vim不支持系统剪贴板。需要用如下命令安装才可以支持</p>
 <pre><code>$ sudo apt-get install vim-gnome
 </code></pre>
+
+<p>可以通过<code>vim --version</code>来查看系统剪贴板是否启用。</p>
 
 <h1 id="移动光标">移动光标</h1>
 
